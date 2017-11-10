@@ -144,8 +144,8 @@ function addRatingToPage(rating, link) {
     var link = document.createElement("a");
     var space = document.createTextNode(" "); // Create a space between professor name and rating
     var professorRatingTextNode = document.createTextNode(rating); // The text with the professor rating
-
-		ProfessorRating = Number(rating);
+		var ProfessorRating = Number(rating);
+		
     if (ProfessorRating < 3.5) {
         link.style.color = "#8A0808"; // red = bad
     } else if (ProfessorRating >= 3.5 && ProfessorRating < 4) {
