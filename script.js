@@ -118,30 +118,34 @@ function getProfessorName(indexOfProfessor)
 	}
 }
 
-
+/////
+//
 
 // This function checks if legit then adds the rating of the professor!!!!!
 function getProfessorLegit(professorIndex, currentProfessor)
 {
-	var callback = function(professor) {
-  if (professor === null ) {
-    console.log("No professor found.");
-    return;
-  }
-		addRatingToPage(professorIndex, currentProfessor);
+		rating = WSU.get(currentProfessor,callback);
+
+		if(rating != ""){
+
+			var url = WSU.get(currentProfessor,URI);
+
+			addRatingToPage(rating, url)
+		}
 
 }
 
 /**
  *  This function adds the rating to the class search page. Depending on the score the color of it is changed
  */
-function addRatingToPage(professorID, Name_) {
+function addRatingToPage(rating, link) {
 
     var span = document.createElement("span"); // Created to separate professor name and score in the HTML
     var link = document.createElement("a");
     var space = document.createTextNode(" "); // Create a space between professor name and rating
-    var professorRatingTextNode = document.createTextNode(WSU.get(Name_, callback)); // The text with the professor rating
+    var professorRatingTextNode = document.createTextNode(rating); // The text with the professor rating
 
+		ProfessorRating = Number(rating);
     if (ProfessorRating < 3.5) {
         link.style.color = "#8A0808"; // red = bad
     } else if (ProfessorRating >= 3.5 && ProfessorRating < 4) {
@@ -152,7 +156,7 @@ function addRatingToPage(professorID, Name_) {
 
     span.style.fontWeight = "bold"; // bold it
 
-    link.href = (WSU.get(Name_, callback); // make the link
+    link.href = link; // make the link
     link.target = "_blank"; // open a new tab when clicked
 
     // append everything together
