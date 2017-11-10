@@ -1,5 +1,5 @@
-require('./rpm-api.js');
-var pennState = rmp("Washington State University");
+var rmp = require('./rmp-api.js');
+var WSU = rmp("Washington State University");
 var professorName = ""; // The name of the professor currently being searched
 var professorRating = ""; // The rating of the professor
 
@@ -11,6 +11,11 @@ var professorMethodID = "MTGPAT_INSTR$"
  * This listens for any change in the page and fires the listener function.
  * The timeout is so that it isn't fired several times.
  */
+ //
+ /////
+ ///
+ ///
+ ///
 var timeout = null;
 document.addEventListener("DOMSubtreeModified",
 function()
@@ -32,6 +37,21 @@ function listener()
 	}
 }
 
+var callback = function(professor) {
+  if (professor === null) {
+    console.log("Professor not found.\n");
+    return "";
+  }
+  else return professor.easiness;
+};
+
+var URI = function(professor) {
+  if (professor === null) {
+    console.log("Professor not found.\n");
+    return "";
+  }
+  else return professor.url;
+};
 /**
  * This method finds out which method the user took when getting to the enroll page. Depending on which method (through class search or my requirements)
  * the ID for the professor name changes.
@@ -77,7 +97,7 @@ function RunScript()
 		// only get the professor search page if its not undefined or staff
 		if(professorName != "Staff" && professorName != "undefined")
 		{
-			getProfessorRating(professorIndex, currentProfessor);
+			getProfessorLegit(professorIndex, currentProfessor);
 		}
 		professorIndex++;
 	}
@@ -100,63 +120,84 @@ function getProfessorName(indexOfProfessor)
 
 
 
-// This function gets the professor rating from the professor page
-function getProfessorRating(professorIndex, currentProfessor)
+// This function checks if legit then adds the rating of the professor!!!!!
+function getProfessorLegit(professorIndex, currentProfessor)
 {
 	var callback = function(professor) {
   if (professor === null ) {
     console.log("No professor found.");
-    return professor.rating;
+    return;
   }
-		addRatingToPage(professorIndex, rmp.get(currentProfessor, callback), currentProfessor);
-	
+		addRatingToPage(professorIndex, currentProfessor);
+
 }
 
 /**
  *  This function adds the rating to the class search page. Depending on the score the color of it is changed
  */
-function addRatingToPage(professorID, ProfessorRating, current professor)
-{
-	var span = document.createElement('span'); // Created to separate professor name and score in the HTML
+function addRatingToPage(professorID, Name_) {
 
-	var link = document.createElement('a');
+    var span = document.createElement("span"); // Created to separate professor name and score in the HTML
+    var link = document.createElement("a");
+    var space = document.createTextNode(" "); // Create a space between professor name and rating
+    var professorRatingTextNode = document.createTextNode(WSU.get(Name_, callback)); // The text with the professor rating
 
-	var space = document.createTextNode(" "); // Create a space between professor name and rating
+    if (ProfessorRating < 3.5) {
+        link.style.color = "#8A0808"; // red = bad
+    } else if (ProfessorRating >= 3.5 && ProfessorRating < 4) {
+        link.style.color = "#FFBF00"; // yellow/orange = okay
+    } else if (ProfessorRating >= 4 && ProfessorRating <= 5) {
+        link.style.color = "#298A08"; // green = good
+    }
 
-	var professorRatingTextNode = document.createTextNode(ProfessorRating); // The text with the professor rating
+    span.style.fontWeight = "bold"; // bold it
 
-	if(ProfessorRating < 3.5)
-	{
-		link.style.color = "#8A0808"; // red = bad
-	}
-	else if (ProfessorRating >= 3.5 && ProfessorRating < 4 )
-	{
-		link.style.color = "#FFBF00"; // yellow/orange = okay
-	}
-	else if (ProfessorRating >= 4 && ProfessorRating <= 5 )
-	{
-		link.style.color = "#298A08"; // green = good
-	}
+    link.href = (WSU.get(Name_, callback); // make the link
+    link.target = "_blank"; // open a new tab when clicked
 
-	span.style.fontWeight = "bold"; // bold it
-
-	link.href = SearchPageURL; // make the link
-	link.target = "_blank"; // open a new tab when clicked
-
-	// append everything together
-	link.appendChild(professorRatingTextNode);
-	span.appendChild(space);
-	span.appendChild(link);
-	professorID.appendChild(span);
+    // append everything together
+    link.appendChild(professorRatingTextNode);
+    span.appendChild(space);
+    span.appendChild(link);
+    professorID.appendChild(span);
 }
+
+
+
+
 
 /**
  * This function simply resets the variables
  */
-function resetValues()
-{
-	professorName = "";
-	ratingsPageURL = "";
-	searchPageURL = "";
-	professorRating = "";
+function resetValues() {
+    professorName = "";
+    ratingsPageURL = "";
+    searchPageURL = "";
+    professorRating = "";
+}
+
+// EXTRA STOOOF
+/**
+ * Function to get the last name from a person.
+ * We are using American English as the base for the
+ * inferences.
+ *
+ * The following names are supported:
+ * Doe 			=> 	Doe
+ * John Doe 	=>	Doe
+ * John M. Doe 	=>	Doe
+ *
+ * @param  String
+ * @return String
+ */
+function getLastName(fullName) {
+    var comp = fullName.split(" ");
+
+    if (comp.length == 1) {
+        return comp[0]; //Case for Doe
+    } else if (comp.length == 2) {
+        return comp[1]; //case for John Doe
+    } else if (comp.length == 3) {
+        return comp[2]; //case for John M. Doe
+    }
 }
